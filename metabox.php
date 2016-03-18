@@ -39,8 +39,8 @@ class membershipsPlusMetabox {
 
         if ( in_array( $post_type, $post_types ) ) {
             add_meta_box(
-                'some_meta_box_name',
-                __( 'Some Meta Box Headline', 'textdomain' ),
+                'membership_dates',
+                __( 'Membership Dates', 'textdomain' ),
                 array( $this, 'render_meta_box_content' ),
                 $post_type,
                 'normal',
