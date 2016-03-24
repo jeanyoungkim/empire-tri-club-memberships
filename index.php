@@ -11,19 +11,33 @@
  *
  */
 
-require( 'metabox.php' );
 
-add_action( 'save_post', function($post_id) {
-    $post = get_post($post_id);
 defined( 'ABSPATH' ) or exit; // Exit if accessed directly
 
 
+/** 
+ * Modifies the WooCommerce Memberships start / end date for newly purchased user memberships
+ *   if a start / end date has been set
+ * 
+ * Renewals / re-purchases will use the membership length to extend the membership from the
+ *   original expiration date.
+ */
 class ETC_Memberships {
 	
 	
 	/** @var ETC_Memberships single instance of this plugin */
 	protected static $instance;
 	
+	
+	public function __construct() {
+	
+		// load the metabox
+		add_action( 'plugins_loaded', array( $this, 'includes' ), 20 );
+		
+		// add start & end date when membership is created
+		add_action( 'wc_memberships_user_membership_created', array( $this, 'modify_dates' ), 50, 2 );	
+	
+	}
 	
 	
 	/** Helper methods ***************************************/
@@ -43,11 +57,54 @@ class ETC_Memberships {
 		return self::$instance;
 	}
 	
+	
+	/** Plugin methods ***************************************/
+	
+	
+	/**
+	 * Load the membership plan metabox
+	 *
+	 * @since  1.1.0
+	 */
+	public function includes() {
+		require_once( 'metabox.php' );
+	}
+	
 
-    if ( $post->post_type != 'wc_user_membership' ) return;
+	/**
+	 * Modifies the start / end dates for memberships (if set) when purchased
+	 *
+	 * @since 1.1.0
+	 * @param \WC_Memberships_Membership_Plan $plan
+	 * @param array $args {
+	 *		@type int $user_id user ID making the purchase
+	 *		@type int $user_membership_id post ID of the created user membership
+	 * 		@type bool $updating true if the membership is being updated, not created
+	 * }
+	 */
+	public function modify_dates( $plan, $args ) {
 
-    $user_membership = wc_memberships_get_user_membership( $post );
-    $plan = get_post( $user_membership->get_plan_id() );
+		// bail if the membership is not new / being created
+		// this allows renewals / extensions to process properly
+		if ( ! empty( $args['is_update'] ) ) {
+			return;
+		}
+
+		$user_membership = wc_memberships_get_user_membership( $args['user_membership_id'] );
+
+    	$start_date = get_post_meta( $plan->get_id(), '_etc_memberships_start_date', true );
+    	$end_date = get_post_meta( $plan->get_id(), '_etc_memberships_end_date', true );
+
+		// only update post meta if these values are set
+    	if ( ! empty( $start_date ) ) {
+    		update_post_meta( $user_membership->get_id(), '_start_date', $start_date );
+    	}
+    
+    	if ( ! empty( $end_date ) ) {
+    		update_post_meta( $user_membership->get_id(), '_end_date', $end_date );
+    	}
+	}
+
 } // end \ETC_Memberships class
 
 
@@ -61,10 +118,6 @@ function etc_memberships() {
     return ETC_Memberships::instance();
 }
 
-    $start_date = get_post_meta( $plan->ID, '_etc_memberships_start_date', true );
-    $end_date = get_post_meta( $plan->ID, '_etc_memberships_end_date', true );
 
-    update_post_meta( $post->ID, '_start_date', $start_date );
-    update_post_meta( $post->ID, '_end_date', $end_date );
-}, 100, 2);// fire it up!
+// fire it up!
 etc_memberships();
