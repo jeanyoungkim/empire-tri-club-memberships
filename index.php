@@ -92,17 +92,17 @@ class ETC_Memberships {
 
 		$user_membership = wc_memberships_get_user_membership( $args['user_membership_id'] );
 
-    	$start_date = get_post_meta( $plan->get_id(), '_etc_memberships_start_date', true );
-    	$end_date = get_post_meta( $plan->get_id(), '_etc_memberships_end_date', true );
+		$start_date = get_post_meta( $plan->get_id(), '_etc_memberships_start_date', true );
+		$end_date = get_post_meta( $plan->get_id(), '_etc_memberships_end_date', true );
 
 		// only update post meta if these values are set
-    	if ( ! empty( $start_date ) ) {
-    		update_post_meta( $user_membership->get_id(), '_start_date', $start_date );
-    	}
+		if ( ! empty( $start_date ) ) {
+			update_post_meta( $user_membership->get_id(), '_start_date', $start_date );
+		}
     
-    	if ( ! empty( $end_date ) ) {
-    		update_post_meta( $user_membership->get_id(), '_end_date', $end_date );
-    	}
+		if ( ! empty( $end_date ) ) {
+			update_post_meta( $user_membership->get_id(), '_end_date', $end_date );
+		}
 	}
 
 } // end \ETC_Memberships class
