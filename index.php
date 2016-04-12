@@ -20,6 +20,8 @@ add_action( 'save_post', function($post_id) {
     $user_membership = wc_memberships_get_user_membership( $post );
     $plan = get_post( $user_membership->get_plan_id() );
 
+    if ( !get_post_meta( $plan->ID, '_etc_memberships_start_date', true ) ) return;
+
     $start_date = get_post_meta( $plan->ID, '_etc_memberships_start_date', true );
     $end_date = get_post_meta( $plan->ID, '_etc_memberships_end_date', true );
 
